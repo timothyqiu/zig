@@ -1494,7 +1494,10 @@ pub fn connectTunnel(
             conn.tls_client = try client.allocator.create(std.crypto.tls.Client);
             errdefer client.allocator.destroy(conn.tls_client);
 
-            conn.tls_client.* = std.crypto.tls.Client.init(conn.stream, client.ca_bundle, tunnel_host) catch return error.TlsInitializationFailed;
+            conn.tls_client.* = std.crypto.tls.Client.init(conn.stream, .{
+                .host = .{ .explicit = tunnel_host },
+                .ca = .{ .bundle = client.ca_bundle },
+            }) catch return error.TlsInitializationFailed;
             // This is appropriate for HTTPS because the HTTP headers contain
             // the content length which is used to detect truncation attacks.
             conn.tls_client.allow_truncation_attacks = true;
